@@ -1,0 +1,12 @@
+backend/
+railway.json
+*.py
+requirements.txt
+Dockerfile
+.dockerignore
+__pycache__/
+*.pyc
+venv/
+env/
+.venv/
+
