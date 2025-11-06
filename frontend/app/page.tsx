@@ -204,22 +204,39 @@ export default function Home() {
         formDataToSend.append('allergies', formData.allergies)
       }
       
-      const res = await fetch(`${apiUrl}/triage`, {
-        method: 'POST',
-        body: formDataToSend,
-      })
+      // Create AbortController for timeout
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 120000) // 2 minutes timeout
       
-      if (!res.ok) {
-        const errorData = await res.json().catch(() => ({ detail: 'Unknown error' }))
-        throw new Error(errorData.detail || `HTTP ${res.status}`)
+      try {
+        const res = await fetch(`${apiUrl}/triage`, {
+          method: 'POST',
+          body: formDataToSend,
+          signal: controller.signal,
+        })
+        
+        clearTimeout(timeoutId)
+        
+        if (!res.ok) {
+          const errorData = await res.json().catch(() => ({ detail: 'Unknown error' }))
+          throw new Error(errorData.detail || `HTTP ${res.status}`)
+        }
+        
+        const data = await res.json()
+        setResult(data)
+      } catch (fetchError: any) {
+        clearTimeout(timeoutId)
+        if (fetchError.name === 'AbortError') {
+          throw new Error('Request timeout: The assessment is taking longer than expected. Please try again or check your connection.')
+        }
+        throw fetchError
       }
-      
-      const data = await res.json()
-      setResult(data)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to perform triage assessment')
+      const errorMessage = err instanceof Error ? err.message : 'Failed to perform triage assessment'
+      setError(errorMessage)
       console.error('Triage error:', err) // Debug log
-    } finally {
+      
+      // Reset loading state on error
       setLoading(false)
     }
   }
@@ -447,7 +464,11 @@ export default function Home() {
                       <div className="w-20 h-20 border-4 border-black border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
                     </div>
                     <p className="text-black font-black text-xl md:text-2xl mt-6">ANALYZING...</p>
-                    <p className="text-gray-600 text-sm md:text-base mt-3">Processing multimodal input</p>
+                    <p className="text-gray-600 text-sm md:text-base mt-3">Processing multimodal input with AI models</p>
+                    <p className="text-gray-500 text-xs mt-4 font-medium">This may take 30-90 seconds depending on input complexity</p>
+                    <div className="mt-6 w-full max-w-xs mx-auto bg-gray-200 border-4 border-black h-2">
+                      <div className="bg-black h-full animate-pulse" style={{ width: '60%' }}></div>
+                    </div>
                   </div>
                 )}
 

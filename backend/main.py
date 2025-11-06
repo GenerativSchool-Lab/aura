@@ -252,7 +252,8 @@ Respond ONLY with valid JSON, no additional text."""
             response = mistral_client.chat.complete(
                 model=model,
                 messages=messages,
-                temperature=0.3
+                temperature=0.3,
+                max_tokens=2000  # Limit response length for faster processing
             )
         elif input_type in ["video", "audio"]:
             # For now, use text model with note about audio/video
@@ -260,13 +261,15 @@ Respond ONLY with valid JSON, no additional text."""
             response = mistral_client.chat.complete(
                 model="mistral-large-latest",  # Fallback until Voxtral is fully available
                 messages=messages,
-                temperature=0.3
+                temperature=0.3,
+                max_tokens=2000
             )
         else:
             response = mistral_client.chat.complete(
                 model=model,
                 messages=messages,
-                temperature=0.3
+                temperature=0.3,
+                max_tokens=2000  # Limit response length for faster processing
             )
         
         # Parse response
