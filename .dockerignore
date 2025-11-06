@@ -1,0 +1,40 @@
+# Frontend files (not needed for backend Docker build)
+frontend/
+node_modules/
+.next/
+out/
+
+# Git
+.git/
+.gitignore
+
+# Documentation
+README.md
+*.md
+
+# Vercel
+.vercel/
+vercel.json
+
+# Railway (keep railway.json for config, but ignore .railway folder)
+.railway/
+
+# Python cache (backend has its own .dockerignore but this is extra safety)
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
