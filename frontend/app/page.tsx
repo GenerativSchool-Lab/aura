@@ -460,8 +460,9 @@ export default function Home() {
       {/* Footer */}
       <footer className="mt-12 border-t-2 border-black pt-6 pb-4">
         <div className="max-w-7xl mx-auto px-4">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-sm">
-            <div className="flex flex-col md:flex-row gap-4 items-center">
+          <div className="flex flex-col gap-6 text-sm">
+            {/* Links */}
+            <div className="flex flex-col md:flex-row gap-4 items-center justify-center">
               <a
                 href="https://github.com/GenerativSchool-Lab/aura"
                 target="_blank"
@@ -480,10 +481,17 @@ export default function Home() {
                 GenerativSchool - AI Civic Tech Lab
               </a>
             </div>
-            <div className="text-gray-700 text-center md:text-right">
-              <p className="font-semibold">Coded & Architected by</p>
-              <p className="text-black font-bold">Soufiane Lemqari</p>
-              <p className="text-xs text-gray-600 mt-1">Full Stack ML Engineer</p>
+            
+            {/* Credits */}
+            <div className="flex flex-col md:flex-row justify-between items-center gap-4 border-t border-gray-300 pt-4">
+              <div className="text-center md:text-left">
+                <p className="text-black font-bold">Lead Architect & Dev: Soufiane Lemqari</p>
+              </div>
+              <div className="text-center md:text-right text-gray-700">
+                <p className="text-xs font-semibold mb-1">Open Source Contributors:</p>
+                <p className="text-xs">Laura Sibony (AI Expert)</p>
+                <p className="text-xs">Camille François, M.D.</p>
+              </div>
             </div>
           </div>
         </div>
