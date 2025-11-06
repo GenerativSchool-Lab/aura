@@ -1,0 +1,23 @@
+# Additional dependencies for voice/audio support
+# Add these to requirements.txt when implementing Phase 1
+
+# Audio Processing
+pydub==0.25.1          # Audio file manipulation and format conversion
+ffmpeg-python==0.2.0   # FFmpeg wrapper (requires system FFmpeg)
+
+# Speech Recognition (choose one approach)
+# Option 1: OpenAI Whisper (high quality, offline capable)
+openai-whisper==20231117
+
+# Option 2: Google Speech Recognition (requires API key)
+# speech-recognition==3.10.0
+
+# Audio Metadata
+mutagen==1.47.0        # Audio metadata reading
+
+# Optional: Advanced audio analysis
+# librosa==0.10.1      # Audio analysis (large dependency, only if needed)
+
+# Note: Voxtral API integration will use existing mistralai package
+# May need to check for Voxtral-specific endpoints in mistralai SDK
+
