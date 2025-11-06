@@ -7,7 +7,7 @@ from typing import Optional, List
 from mistralai import Mistral
 import json
 import mimetypes
-from clinical_scoring import get_clinical_scoring_guidelines, convert_score_100_to_10
+from clinical_scoring import get_clinical_scoring_guidelines, get_severity_level_from_score
 
 app = FastAPI(title="Hospital Emergency Multimodal Assistant API")
 
@@ -38,7 +38,7 @@ class TriageRequest(BaseModel):
     input_type: Optional[str] = "text"  # text, image, video, audio
 
 class TriageResponse(BaseModel):
-    severity_score: int
+    severity_score: float  # Score 0-100 (clinical score)
     severity_level: str
     triage_assessment: str
     recommended_service: str
@@ -128,25 +128,24 @@ CRITICAL INSTRUCTIONS:
 1. Identify ALL clinical signs visible in the image AND described in the text
 2. Assign a score (0-100) for EACH sign according to the clinical scoring tables
 3. Use the MAXIMUM score (not average) to determine overall severity
-4. Convert the maximum score to severity_score (1-10) using the conversion mapping
+4. Determine severity_level and urgency based on the score range
 5. Ensure severity_score, severity_level, and urgency are consistent
 
-CONVERSION MAPPING (MANDATORY):
-- Clinical score 90-100 → severity_score 1-2 → severity_level "Critical" → urgency "Immediate"
-- Clinical score 70-89 → severity_score 3-4 → severity_level "High" → urgency "Urgent"
-- Clinical score 50-69 → severity_score 5-6 → severity_level "Moderate" → urgency "Moderate"
-- Clinical score 30-49 → severity_score 7-8 → severity_level "Low" → urgency "Low"
-- Clinical score 0-29 → severity_score 9-10 → severity_level "Non-urgent" → urgency "Non-urgent"
+SCORE TO LEVEL MAPPING (MANDATORY):
+- Score 90-100 → severity_level "Critical" → urgency "Immediate"
+- Score 70-89 → severity_level "High" → urgency "Urgent"
+- Score 50-69 → severity_level "Moderate" → urgency "Moderate"
+- Score 30-49 → severity_level "Low" → urgency "Low"
+- Score 0-29 → severity_level "Non-urgent" → urgency "Non-urgent"
 
 Provide your assessment in the following JSON format:
 {{
-    "clinical_score_100": <float 0-100, the maximum score from identified clinical signs>,
-    "severity_score": <integer 1-10, converted from clinical_score_100 using mapping above>,
-    "severity_level": "<MUST match severity_score: Critical(1-2)/High(3-4)/Moderate(5-6)/Low(7-8)/Non-urgent(9-10)>",
+    "severity_score": <float 0-100, the maximum score from identified clinical signs>,
+    "severity_level": "<MUST match score range: Critical(90-100)/High(70-89)/Moderate(50-69)/Low(30-49)/Non-urgent(0-29)>",
     "triage_assessment": "<Detailed assessment identifying all clinical signs found in image and text, with their scores>",
     "recommended_service": "<Specific department or service>",
-    "urgency": "<MUST match severity_score: Immediate(1-2)/Urgent(3-4)/Moderate(5-6)/Low(7-8)/Non-urgent(9-10)>",
-    "reasoning": "<Detailed explanation: (1) Clinical signs identified in image, (2) Clinical signs from text, (3) Score assigned to each sign (0-100), (4) Maximum score selected, (5) Conversion to severity_score 1-10, (6) Clinical justification for routing>"
+    "urgency": "<MUST match score range: Immediate(90-100)/Urgent(70-89)/Moderate(50-69)/Low(30-49)/Non-urgent(0-29)>",
+    "reasoning": "<Detailed explanation: (1) Clinical signs identified in image, (2) Clinical signs from text, (3) Score assigned to each sign (0-100), (4) Maximum score selected, (5) Clinical justification for routing>"
 }}
 
 Respond ONLY with valid JSON, no additional text."""
@@ -174,25 +173,24 @@ CRITICAL INSTRUCTIONS:
 1. Transcribe and identify ALL clinical signs from the {input_type} recording
 2. Assign a score (0-100) for EACH sign according to the clinical scoring tables
 3. Use the MAXIMUM score (not average) to determine overall severity
-4. Convert the maximum score to severity_score (1-10) using the conversion mapping
+4. Determine severity_level and urgency based on the score range
 5. Ensure severity_score, severity_level, and urgency are consistent
 
-CONVERSION MAPPING (MANDATORY):
-- Clinical score 90-100 → severity_score 1-2 → severity_level "Critical" → urgency "Immediate"
-- Clinical score 70-89 → severity_score 3-4 → severity_level "High" → urgency "Urgent"
-- Clinical score 50-69 → severity_score 5-6 → severity_level "Moderate" → urgency "Moderate"
-- Clinical score 30-49 → severity_score 7-8 → severity_level "Low" → urgency "Low"
-- Clinical score 0-29 → severity_score 9-10 → severity_level "Non-urgent" → urgency "Non-urgent"
+SCORE TO LEVEL MAPPING (MANDATORY):
+- Score 90-100 → severity_level "Critical" → urgency "Immediate"
+- Score 70-89 → severity_level "High" → urgency "Urgent"
+- Score 50-69 → severity_level "Moderate" → urgency "Moderate"
+- Score 30-49 → severity_level "Low" → urgency "Low"
+- Score 0-29 → severity_level "Non-urgent" → urgency "Non-urgent"
 
 Provide your assessment in the following JSON format:
 {{
-    "clinical_score_100": <float 0-100, the maximum score from identified clinical signs>,
-    "severity_score": <integer 1-10, converted from clinical_score_100 using mapping above>,
-    "severity_level": "<MUST match severity_score: Critical(1-2)/High(3-4)/Moderate(5-6)/Low(7-8)/Non-urgent(9-10)>",
+    "severity_score": <float 0-100, the maximum score from identified clinical signs>,
+    "severity_level": "<MUST match score range: Critical(90-100)/High(70-89)/Moderate(50-69)/Low(30-49)/Non-urgent(0-29)>",
     "triage_assessment": "<Detailed assessment identifying all clinical signs found in {input_type} and text, with their scores>",
     "recommended_service": "<Specific department or service>",
-    "urgency": "<MUST match severity_score: Immediate(1-2)/Urgent(3-4)/Moderate(5-6)/Low(7-8)/Non-urgent(9-10)>",
-    "reasoning": "<Detailed explanation: (1) Clinical signs identified in {input_type}, (2) Clinical signs from text, (3) Score assigned to each sign (0-100), (4) Maximum score selected, (5) Conversion to severity_score 1-10, (6) Clinical justification for routing>"
+    "urgency": "<MUST match score range: Immediate(90-100)/Urgent(70-89)/Moderate(50-69)/Low(30-49)/Non-urgent(0-29)>",
+    "reasoning": "<Detailed explanation: (1) Clinical signs identified in {input_type}, (2) Clinical signs from text, (3) Score assigned to each sign (0-100), (4) Maximum score selected, (5) Clinical justification for routing>"
 }}
 
 Respond ONLY with valid JSON, no additional text."""
@@ -216,25 +214,24 @@ CRITICAL INSTRUCTIONS:
 1. Identify ALL clinical signs present in the patient description
 2. Assign a score (0-100) for EACH sign according to the clinical scoring tables above
 3. Use the MAXIMUM score (not average) to determine overall severity
-4. Convert the maximum score to severity_score (1-10) using the conversion mapping
+4. Determine severity_level and urgency based on the score range
 5. Ensure severity_score, severity_level, and urgency are consistent
 
-CONVERSION MAPPING (MANDATORY):
-- Clinical score 90-100 → severity_score 1-2 → severity_level "Critical" → urgency "Immediate"
-- Clinical score 70-89 → severity_score 3-4 → severity_level "High" → urgency "Urgent"
-- Clinical score 50-69 → severity_score 5-6 → severity_level "Moderate" → urgency "Moderate"
-- Clinical score 30-49 → severity_score 7-8 → severity_level "Low" → urgency "Low"
-- Clinical score 0-29 → severity_score 9-10 → severity_level "Non-urgent" → urgency "Non-urgent"
+SCORE TO LEVEL MAPPING (MANDATORY):
+- Score 90-100 → severity_level "Critical" → urgency "Immediate"
+- Score 70-89 → severity_level "High" → urgency "Urgent"
+- Score 50-69 → severity_level "Moderate" → urgency "Moderate"
+- Score 30-49 → severity_level "Low" → urgency "Low"
+- Score 0-29 → severity_level "Non-urgent" → urgency "Non-urgent"
 
 Provide your assessment in the following JSON format:
 {{
-    "clinical_score_100": <float 0-100, the maximum score from identified clinical signs>,
-    "severity_score": <integer 1-10, converted from clinical_score_100 using mapping above>,
-    "severity_level": "<MUST match severity_score: Critical(1-2)/High(3-4)/Moderate(5-6)/Low(7-8)/Non-urgent(9-10)>",
+    "severity_score": <float 0-100, the maximum score from identified clinical signs>,
+    "severity_level": "<MUST match score range: Critical(90-100)/High(70-89)/Moderate(50-69)/Low(30-49)/Non-urgent(0-29)>",
     "triage_assessment": "<Detailed assessment identifying all clinical signs found and their scores>",
     "recommended_service": "<Specific department or service: e.g., 'Cardiology', 'Trauma Center', 'Pediatric Emergency', 'General Emergency', 'Psychiatric Emergency', 'Orthopedics', etc.>",
-    "urgency": "<MUST match severity_score: Immediate(1-2)/Urgent(3-4)/Moderate(5-6)/Low(7-8)/Non-urgent(9-10)>",
-    "reasoning": "<Detailed explanation: (1) List all clinical signs identified, (2) Score assigned to each sign (0-100), (3) Maximum score selected, (4) Conversion to severity_score 1-10, (5) Clinical justification for routing decision>"
+    "urgency": "<MUST match score range: Immediate(90-100)/Urgent(70-89)/Moderate(50-69)/Low(30-49)/Non-urgent(0-29)>",
+    "reasoning": "<Detailed explanation: (1) List all clinical signs identified, (2) Score assigned to each sign (0-100), (3) Maximum score selected, (4) Clinical justification for routing decision>"
 }}
 
 Respond ONLY with valid JSON, no additional text."""
@@ -283,37 +280,28 @@ Respond ONLY with valid JSON, no additional text."""
             
             triage_data = json.loads(response_text)
             
-            # Get clinical score if provided, otherwise use severity_score
-            clinical_score_100 = triage_data.get("clinical_score_100")
-            score = triage_data.get("severity_score", 5)
+            # Get severity score (0-100)
+            score = triage_data.get("severity_score", 50.0)
+            score = max(0.0, min(100.0, float(score)))
             
-            # If clinical_score_100 is provided, validate and convert
-            if clinical_score_100 is not None:
-                # Ensure clinical score is in valid range
-                clinical_score_100 = max(0, min(100, float(clinical_score_100)))
-                # Convert to 1-10 scale
-                score = convert_score_100_to_10(clinical_score_100)
+            # Get severity level and urgency from score
+            level, urgency = get_severity_level_from_score(score)
             
-            # Validate and enforce consistency between score and level
-            level = triage_data.get("severity_level", "Moderate")
-            urgency = triage_data.get("urgency", "Moderate")
+            # Override with AI response if provided and valid
+            ai_level = triage_data.get("severity_level", "")
+            ai_urgency = triage_data.get("urgency", "")
             
-            # Enforce correct mapping based on score
-            if score <= 2:
-                level = "Critical"
-                urgency = "Immediate"
-            elif score <= 4:
-                level = "High"
-                urgency = "Urgent"
-            elif score <= 6:
-                level = "Moderate"
-                urgency = "Moderate"
-            elif score <= 8:
-                level = "Low"
-                urgency = "Low"
-            else:  # score 9-10
-                level = "Non-urgent"
-                urgency = "Non-urgent"
+            # Validate AI response matches score range
+            if score >= 90 and ai_level == "Critical" and ai_urgency == "Immediate":
+                level, urgency = ai_level, ai_urgency
+            elif score >= 70 and score < 90 and ai_level == "High" and ai_urgency == "Urgent":
+                level, urgency = ai_level, ai_urgency
+            elif score >= 50 and score < 70 and ai_level == "Moderate" and ai_urgency == "Moderate":
+                level, urgency = ai_level, ai_urgency
+            elif score >= 30 and score < 50 and ai_level == "Low" and ai_urgency == "Low":
+                level, urgency = ai_level, ai_urgency
+            elif score < 30 and ai_level == "Non-urgent" and ai_urgency == "Non-urgent":
+                level, urgency = ai_level, ai_urgency
             
             return TriageResponse(
                 severity_score=score,

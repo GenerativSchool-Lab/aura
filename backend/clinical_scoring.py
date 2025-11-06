@@ -70,32 +70,21 @@ ALL_CLINICAL_SIGNS = {
     **GENERAL_SIGNS,
 }
 
-def convert_score_100_to_10(score_100: float) -> int:
+def get_severity_level_from_score(score_100: float) -> tuple[str, str]:
     """
-    Convert clinical score (0-100) to triage severity score (1-10)
-    
-    Mapping:
-    - 90-100: Score 1-2 (Critical)
-    - 70-89: Score 3-4 (High)
-    - 50-69: Score 5-6 (Moderate)
-    - 30-49: Score 7-8 (Low)
-    - 0-29: Score 9-10 (Non-urgent)
+    Get severity level and urgency from clinical score (0-100)
+    Returns: (severity_level, urgency)
     """
     if score_100 >= 90:
-        # Critical: map 90-100 to 1-2
-        return max(1, min(2, int(2 - (score_100 - 90) / 10)))
+        return ("Critical", "Immediate")
     elif score_100 >= 70:
-        # High: map 70-89 to 3-4
-        return max(3, min(4, int(4 - (score_100 - 70) / 20)))
+        return ("High", "Urgent")
     elif score_100 >= 50:
-        # Moderate: map 50-69 to 5-6
-        return max(5, min(6, int(6 - (score_100 - 50) / 20)))
+        return ("Moderate", "Moderate")
     elif score_100 >= 30:
-        # Low: map 30-49 to 7-8
-        return max(7, min(8, int(8 - (score_100 - 30) / 20)))
+        return ("Low", "Low")
     else:
-        # Non-urgent: map 0-29 to 9-10
-        return max(9, min(10, int(10 - score_100 / 30)))
+        return ("Non-urgent", "Non-urgent")
 
 def get_triage_category(score_100: float) -> dict:
     """
@@ -188,12 +177,12 @@ ALGORITHME DE TRIAGE:
 - Score 50-69: Urgence relative → Consultation urgence (<2h)
 - Score <50: Non urgent → Consultation programmée
 
-CONVERSION VERS SCORE 1-10:
-- Score 90-100 → Severity 1-2 (Critical)
-- Score 70-89 → Severity 3-4 (High)
-- Score 50-69 → Severity 5-6 (Moderate)
-- Score 30-49 → Severity 7-8 (Low)
-- Score 0-29 → Severity 9-10 (Non-urgent)
+CATÉGORISATION PAR SCORE (0-100):
+- Score 90-100 → Critical / Immediate (Urgence vitale)
+- Score 70-89 → High / Urgent (Urgence majeure)
+- Score 50-69 → Moderate / Moderate (Urgence relative)
+- Score 30-49 → Low / Low (Non urgent)
+- Score 0-29 → Non-urgent / Non-urgent (Non urgent)
 
 INSTRUCTIONS:
 1. Identifier TOUS les signes cliniques présents dans la description

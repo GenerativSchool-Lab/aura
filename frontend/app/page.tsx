@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react'
 
 interface TriageResult {
-  severity_score: number
+  severity_score: number  // Score 0-100
   severity_level: string
   triage_assessment: string
   recommended_service: string
@@ -127,15 +127,15 @@ export default function Home() {
   }
 
   const getSeverityColor = (score: number) => {
-    if (score <= 2) return 'bg-black'
-    if (score <= 4) return 'bg-gray-800'
-    if (score <= 6) return 'bg-gray-600'
-    if (score <= 8) return 'bg-gray-400'
+    if (score >= 90) return 'bg-black'
+    if (score >= 70) return 'bg-gray-800'
+    if (score >= 50) return 'bg-gray-600'
+    if (score >= 30) return 'bg-gray-400'
     return 'bg-gray-300'
   }
 
   const getSeverityTextColor = (score: number) => {
-    if (score <= 4) return 'text-white'
+    if (score >= 70) return 'text-white'
     return 'text-black'
   }
 
@@ -416,9 +416,9 @@ export default function Home() {
                   <div className="border-4 border-black p-6 text-center">
                     <div className="text-xs font-bold text-black uppercase tracking-widest mb-2">Severity Score</div>
                     <div className={`inline-block px-8 py-4 ${getSeverityColor(result.severity_score)} ${getSeverityTextColor(result.severity_score)} text-5xl font-bold border-4 border-black`}>
-                      {result.severity_score}
+                      {Math.round(result.severity_score)}
                     </div>
-                    <div className="text-xs mt-2 text-gray-700">/ 10</div>
+                    <div className="text-xs mt-2 text-gray-700">/ 100</div>
                     <div className="mt-3 text-lg font-bold text-black uppercase">{result.severity_level}</div>
                   </div>
 
