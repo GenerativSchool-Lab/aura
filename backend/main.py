@@ -146,7 +146,7 @@ Provide your assessment in the following JSON format:
     "triage_assessment": "<Detailed assessment identifying all clinical signs found in image and text, with their scores>",
     "recommended_service": "<Specific department or service>",
     "urgency": "<MUST match score range: Immediate(90-100)/Urgent(70-89)/Moderate(50-69)/Low(30-49)/Non-urgent(0-29)>",
-    "reasoning": "<Detailed explanation: (1) Clinical signs identified in image, (2) Clinical signs from text, (3) Score assigned to each sign (0-100), (4) Maximum score selected, (5) Clinical justification for routing>"
+    "reasoning": "<DETAILED CLINICAL REASONING (minimum 200 words): (1) Complete list of ALL clinical signs identified in image and text, (2) For each sign: explain why it was identified, its clinical significance, and the score assigned (0-100) with justification, (3) Explain why the maximum score was selected as the overall severity, (4) Clinical interpretation: what does this combination of signs indicate about the patient's condition?, (5) Risk assessment: probability of decompensation or deterioration, (6) Justification for service routing: why this specific department/service is recommended based on the clinical presentation, (7) Differential diagnosis considerations if applicable, (8) Any red flags or concerning features that require immediate attention>"
 }}
 
 Respond ONLY with valid JSON, no additional text."""
@@ -191,7 +191,7 @@ Provide your assessment in the following JSON format:
     "triage_assessment": "<Detailed assessment identifying all clinical signs found in {input_type} and text, with their scores>",
     "recommended_service": "<Specific department or service>",
     "urgency": "<MUST match score range: Immediate(90-100)/Urgent(70-89)/Moderate(50-69)/Low(30-49)/Non-urgent(0-29)>",
-    "reasoning": "<Detailed explanation: (1) Clinical signs identified in {input_type}, (2) Clinical signs from text, (3) Score assigned to each sign (0-100), (4) Maximum score selected, (5) Clinical justification for routing>"
+    "reasoning": "<DETAILED CLINICAL REASONING (minimum 200 words): (1) Complete list of ALL clinical signs identified in {input_type} and text, (2) For each sign: explain why it was identified, its clinical significance, and the score assigned (0-100) with justification, (3) Explain why the maximum score was selected as the overall severity, (4) Clinical interpretation: what does this combination of signs indicate about the patient's condition?, (5) Risk assessment: probability of decompensation or deterioration, (6) Justification for service routing: why this specific department/service is recommended based on the clinical presentation, (7) Differential diagnosis considerations if applicable, (8) Any red flags or concerning features that require immediate attention>"
 }}
 
 Respond ONLY with valid JSON, no additional text."""
@@ -232,7 +232,7 @@ Provide your assessment in the following JSON format:
     "triage_assessment": "<Detailed assessment identifying all clinical signs found and their scores>",
     "recommended_service": "<Specific department or service: e.g., 'Cardiology', 'Trauma Center', 'Pediatric Emergency', 'General Emergency', 'Psychiatric Emergency', 'Orthopedics', etc.>",
     "urgency": "<MUST match score range: Immediate(90-100)/Urgent(70-89)/Moderate(50-69)/Low(30-49)/Non-urgent(0-29)>",
-    "reasoning": "<Detailed explanation: (1) List all clinical signs identified, (2) Score assigned to each sign (0-100), (3) Maximum score selected, (4) Clinical justification for routing decision>"
+    "reasoning": "<DETAILED CLINICAL REASONING (minimum 200 words): (1) Complete list of ALL clinical signs identified, (2) For each sign: explain why it was identified, its clinical significance, and the score assigned (0-100) with justification, (3) Explain why the maximum score was selected as the overall severity, (4) Clinical interpretation: what does this combination of signs indicate about the patient's condition?, (5) Risk assessment: probability of decompensation or deterioration, (6) Justification for service routing: why this specific department/service is recommended based on the clinical presentation, (7) Differential diagnosis considerations if applicable, (8) Any red flags or concerning features that require immediate attention>"
 }}
 
 Respond ONLY with valid JSON, no additional text."""

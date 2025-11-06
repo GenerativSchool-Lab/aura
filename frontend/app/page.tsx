@@ -139,6 +139,20 @@ export default function Home() {
     return 'text-black'
   }
 
+  const getUrgencyBadgeColor = (urgency: string) => {
+    const urgencyLower = urgency.toLowerCase()
+    if (urgencyLower.includes('immediate') || urgencyLower.includes('critical')) {
+      return 'bg-black text-white'
+    }
+    if (urgencyLower.includes('urgent')) {
+      return 'bg-gray-800 text-white'
+    }
+    if (urgencyLower.includes('moderate')) {
+      return 'bg-gray-600 text-white'
+    }
+    return 'bg-gray-300 text-black'
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
@@ -211,286 +225,330 @@ export default function Home() {
   }
 
   return (
-    <main className="min-h-screen bg-white p-4 md:p-8">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="mb-8 border-b-2 border-black pb-4">
-          <h1 className="text-4xl font-bold text-black mb-2">EMERGENCY TRIAGE</h1>
-          <p className="text-gray-700 text-sm">Multimodal AI Assessment System</p>
+    <main className="min-h-screen bg-white">
+      {/* Header with gradient effect */}
+      <div className="bg-gradient-to-b from-white via-gray-50 to-white border-b-4 border-black">
+        <div className="max-w-7xl mx-auto px-4 md:px-8 py-8 md:py-12">
+          <div className="text-center md:text-left">
+            <h1 className="text-5xl md:text-6xl font-black text-black mb-3 tracking-tight">
+              EMERGENCY TRIAGE
+            </h1>
+            <p className="text-gray-700 text-base md:text-lg font-medium">
+              Multimodal AI Assessment System • ERC 2021 • SFAR 2024
+            </p>
+          </div>
         </div>
+      </div>
 
-        <div className="grid md:grid-cols-2 gap-8">
+      <div className="max-w-7xl mx-auto px-4 md:px-8 py-6 md:py-10">
+        <div className="grid lg:grid-cols-2 gap-6 md:gap-10">
           {/* Input Section */}
           <div className="space-y-6">
-            <div className="border-2 border-black p-6 bg-white">
-              <h2 className="text-2xl font-bold text-black mb-6 uppercase tracking-wide">Patient Input</h2>
-              
-              <form onSubmit={handleSubmit} className="space-y-5">
-                {/* Text Input */}
-                <div>
-                  <label className="block text-sm font-bold text-black mb-2 uppercase">
-                    Text Description <span className="text-gray-600 font-normal">(Symptoms, Complaint, Notes)</span>
-                  </label>
-                  <textarea
-                    value={textInput}
-                    onChange={(e) => setTextInput(e.target.value)}
-                    className="w-full p-3 border-2 border-black focus:outline-none focus:ring-2 focus:ring-black bg-white text-black font-mono text-sm"
-                    rows={4}
-                    placeholder="Describe symptoms, chief complaint, or any relevant information..."
-                  />
+            <div className="border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] bg-white transition-shadow hover:shadow-[12px_12px_0px_0px_rgba(0,0,0,1)]">
+              <div className="p-6 md:p-8">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-2 h-2 bg-black rounded-full"></div>
+                  <h2 className="text-2xl md:text-3xl font-black text-black uppercase tracking-tighter">
+                    Patient Input
+                  </h2>
                 </div>
-
-                {/* File Upload */}
-                <div>
-                  <label className="block text-sm font-bold text-black mb-2 uppercase">
-                    Upload Media <span className="text-gray-600 font-normal">(Image, Video, or Audio)</span>
-                  </label>
-                  <div
-                    ref={dropZoneRef}
-                    onDragOver={handleDragOver}
-                    onDragLeave={handleDragLeave}
-                    onDrop={handleDrop}
-                    className={`border-2 border-dashed p-4 text-center transition-colors ${
-                      isDragging 
-                        ? 'border-black bg-black text-white' 
-                        : 'border-black bg-white'
-                    }`}
-                  >
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      onChange={handleFileChange}
-                      accept="image/*,video/*,audio/*"
-                      className="hidden"
-                      id="file-upload"
-                    />
-                    <label
-                      htmlFor="file-upload"
-                      className="cursor-pointer block"
-                    >
-                      <div className={`font-semibold mb-2 ${isDragging ? 'text-white' : 'text-black'}`}>
-                        {file ? file.name : (isDragging ? 'Drop file here' : 'Click to upload or drag and drop')}
-                      </div>
-                      <div className={`text-xs ${isDragging ? 'text-gray-300' : 'text-gray-600'}`}>
-                        Supports: Images, Videos, Audio files
-                      </div>
+                
+                <form onSubmit={handleSubmit} className="space-y-6">
+                  {/* Text Input */}
+                  <div>
+                    <label className="block text-xs md:text-sm font-black text-black mb-3 uppercase tracking-wider">
+                      Text Description
+                      <span className="block text-xs font-normal text-gray-600 mt-1 normal-case">
+                        Symptoms, Complaint, Notes
+                      </span>
                     </label>
-                    {file && (
-                      <button
-                        type="button"
-                        onClick={removeFile}
-                        className="mt-2 px-3 py-1 bg-black text-white text-xs font-bold hover:bg-gray-800"
+                    <textarea
+                      value={textInput}
+                      onChange={(e) => setTextInput(e.target.value)}
+                      className="w-full p-4 border-4 border-black focus:outline-none focus:ring-4 focus:ring-black bg-white text-black font-mono text-sm leading-relaxed resize-none transition-all"
+                      rows={5}
+                      placeholder="Describe symptoms, chief complaint, or any relevant information..."
+                    />
+                  </div>
+
+                  {/* File Upload */}
+                  <div>
+                    <label className="block text-xs md:text-sm font-black text-black mb-3 uppercase tracking-wider">
+                      Upload Media
+                      <span className="block text-xs font-normal text-gray-600 mt-1 normal-case">
+                        Image, Video, or Audio
+                      </span>
+                    </label>
+                    <div
+                      ref={dropZoneRef}
+                      onDragOver={handleDragOver}
+                      onDragLeave={handleDragLeave}
+                      onDrop={handleDrop}
+                      className={`border-4 border-dashed p-6 md:p-8 text-center transition-all ${
+                        isDragging 
+                          ? 'border-black bg-black text-white shadow-inner' 
+                          : 'border-black bg-white hover:bg-gray-50'
+                      }`}
+                    >
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        onChange={handleFileChange}
+                        accept="image/*,video/*,audio/*"
+                        className="hidden"
+                        id="file-upload"
+                      />
+                      <label
+                        htmlFor="file-upload"
+                        className="cursor-pointer block"
                       >
-                        REMOVE
-                      </button>
+                        <div className={`text-lg md:text-xl font-black mb-3 ${isDragging ? 'text-white' : 'text-black'}`}>
+                          {file ? file.name : (isDragging ? 'DROP FILE HERE' : 'CLICK TO UPLOAD OR DRAG & DROP')}
+                        </div>
+                        <div className={`text-xs ${isDragging ? 'text-gray-300' : 'text-gray-600'}`}>
+                          Supports: Images, Videos, Audio files
+                        </div>
+                      </label>
+                      {file && (
+                        <button
+                          type="button"
+                          onClick={removeFile}
+                          className="mt-4 px-4 py-2 bg-black text-white text-xs font-black uppercase hover:bg-gray-800 transition-colors"
+                        >
+                          REMOVE
+                        </button>
+                      )}
+                    </div>
+                    {filePreview && (
+                      <div className="mt-4 border-4 border-black p-3 bg-white">
+                        <img src={filePreview} alt="Preview" className="max-w-full h-auto max-h-64 mx-auto" />
+                      </div>
                     )}
                   </div>
-                  {filePreview && (
-                    <div className="mt-3 border-2 border-black p-2 bg-white">
-                      <img src={filePreview} alt="Preview" className="max-w-full h-auto max-h-48 mx-auto" />
-                    </div>
-                  )}
-                </div>
 
-                {/* Patient Info - Collapsible */}
-                <details className="border-2 border-black">
-                  <summary className="p-3 font-bold text-black cursor-pointer uppercase text-sm">
-                    Patient Information (Optional)
-                  </summary>
-                  <div className="p-4 space-y-4 bg-gray-50">
-                    <div className="grid grid-cols-2 gap-4">
+                  {/* Patient Info - Collapsible */}
+                  <details className="border-4 border-black bg-gray-50">
+                    <summary className="p-4 font-black text-black cursor-pointer uppercase text-sm tracking-wider hover:bg-gray-100 transition-colors">
+                      Patient Information (Optional)
+                    </summary>
+                    <div className="p-4 md:p-6 space-y-5 bg-white border-t-4 border-black">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-xs font-black text-black mb-2 uppercase tracking-wider">Age</label>
+                          <input
+                            type="number"
+                            value={formData.patient_age}
+                            onChange={(e) => setFormData({...formData, patient_age: e.target.value})}
+                            className="w-full p-3 border-4 border-black focus:outline-none focus:ring-4 focus:ring-black bg-white text-black font-bold"
+                            placeholder="45"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-black text-black mb-2 uppercase tracking-wider">Gender</label>
+                          <select
+                            value={formData.patient_gender}
+                            onChange={(e) => setFormData({...formData, patient_gender: e.target.value})}
+                            className="w-full p-3 border-4 border-black focus:outline-none focus:ring-4 focus:ring-black bg-white text-black font-bold"
+                          >
+                            <option value="">Select...</option>
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                            <option value="Other">Other</option>
+                          </select>
+                        </div>
+                      </div>
+
                       <div>
-                        <label className="block text-xs font-bold text-black mb-1 uppercase">Age</label>
+                        <label className="block text-xs font-black text-black mb-2 uppercase tracking-wider">Vital Signs</label>
                         <input
-                          type="number"
-                          value={formData.patient_age}
-                          onChange={(e) => setFormData({...formData, patient_age: e.target.value})}
-                          className="w-full p-2 border-2 border-black focus:outline-none focus:ring-2 focus:ring-black bg-white text-black"
-                          placeholder="45"
+                          type="text"
+                          value={formData.vital_signs}
+                          onChange={(e) => setFormData({...formData, vital_signs: e.target.value})}
+                          className="w-full p-3 border-4 border-black focus:outline-none focus:ring-4 focus:ring-black bg-white text-black"
+                          placeholder="BP: 120/80, HR: 72, Temp: 98.6"
                         />
                       </div>
+
                       <div>
-                        <label className="block text-xs font-bold text-black mb-1 uppercase">Gender</label>
-                        <select
-                          value={formData.patient_gender}
-                          onChange={(e) => setFormData({...formData, patient_gender: e.target.value})}
-                          className="w-full p-2 border-2 border-black focus:outline-none focus:ring-2 focus:ring-black bg-white text-black"
-                        >
-                          <option value="">Select...</option>
-                          <option value="Male">Male</option>
-                          <option value="Female">Female</option>
-                          <option value="Other">Other</option>
-                        </select>
+                        <label className="block text-xs font-black text-black mb-2 uppercase tracking-wider">Medical History</label>
+                        <textarea
+                          value={formData.medical_history}
+                          onChange={(e) => setFormData({...formData, medical_history: e.target.value})}
+                          className="w-full p-3 border-4 border-black focus:outline-none focus:ring-4 focus:ring-black bg-white text-black text-sm resize-none"
+                          rows={2}
+                          placeholder="Previous conditions, surgeries..."
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-black text-black mb-2 uppercase tracking-wider">Medications</label>
+                        <input
+                          type="text"
+                          value={formData.current_medications}
+                          onChange={(e) => setFormData({...formData, current_medications: e.target.value})}
+                          className="w-full p-3 border-4 border-black focus:outline-none focus:ring-4 focus:ring-black bg-white text-black"
+                          placeholder="Current medications"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-black text-black mb-2 uppercase tracking-wider">Allergies</label>
+                        <input
+                          type="text"
+                          value={formData.allergies}
+                          onChange={(e) => setFormData({...formData, allergies: e.target.value})}
+                          className="w-full p-3 border-4 border-black focus:outline-none focus:ring-4 focus:ring-black bg-white text-black"
+                          placeholder="Known allergies"
+                        />
                       </div>
                     </div>
+                  </details>
 
-                    <div>
-                      <label className="block text-xs font-bold text-black mb-1 uppercase">Vital Signs</label>
-                      <input
-                        type="text"
-                        value={formData.vital_signs}
-                        onChange={(e) => setFormData({...formData, vital_signs: e.target.value})}
-                        className="w-full p-2 border-2 border-black focus:outline-none focus:ring-2 focus:ring-black bg-white text-black"
-                        placeholder="BP: 120/80, HR: 72, Temp: 98.6"
-                      />
+                  {error && (
+                    <div className="p-4 bg-black text-white border-4 border-black font-black text-sm uppercase tracking-wider">
+                      ERROR: {error}
                     </div>
+                  )}
 
-                    <div>
-                      <label className="block text-xs font-bold text-black mb-1 uppercase">Medical History</label>
-                      <textarea
-                        value={formData.medical_history}
-                        onChange={(e) => setFormData({...formData, medical_history: e.target.value})}
-                        className="w-full p-2 border-2 border-black focus:outline-none focus:ring-2 focus:ring-black bg-white text-black text-sm"
-                        rows={2}
-                        placeholder="Previous conditions, surgeries..."
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-bold text-black mb-1 uppercase">Medications</label>
-                      <input
-                        type="text"
-                        value={formData.current_medications}
-                        onChange={(e) => setFormData({...formData, current_medications: e.target.value})}
-                        className="w-full p-2 border-2 border-black focus:outline-none focus:ring-2 focus:ring-black bg-white text-black"
-                        placeholder="Current medications"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-bold text-black mb-1 uppercase">Allergies</label>
-                      <input
-                        type="text"
-                        value={formData.allergies}
-                        onChange={(e) => setFormData({...formData, allergies: e.target.value})}
-                        className="w-full p-2 border-2 border-black focus:outline-none focus:ring-2 focus:ring-black bg-white text-black"
-                        placeholder="Known allergies"
-                      />
-                    </div>
-                  </div>
-                </details>
-
-                {error && (
-                  <div className="p-3 bg-black text-white border-2 border-black font-bold text-sm">
-                    ERROR: {error}
-                  </div>
-                )}
-
-                <button
-                  type="submit"
-                  disabled={loading || (!textInput.trim() && !file)}
-                  className="w-full px-6 py-4 bg-black text-white font-bold text-lg uppercase tracking-wide hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed border-2 border-black transition-all"
-                >
-                  {loading ? 'ANALYZING...' : 'ASSESS TRIAGE'}
-                </button>
-              </form>
+                  <button
+                    type="submit"
+                    disabled={loading || (!textInput.trim() && !file)}
+                    className="w-full px-6 py-5 bg-black text-white font-black text-lg md:text-xl uppercase tracking-widest hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all active:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
+                  >
+                    {loading ? 'ANALYZING...' : 'ASSESS TRIAGE'}
+                  </button>
+                </form>
+              </div>
             </div>
           </div>
 
           {/* Results Section */}
           <div className="space-y-6">
-            <div className="border-2 border-black p-6 bg-white min-h-[600px]">
-              <h2 className="text-2xl font-bold text-black mb-6 uppercase tracking-wide">Triage Results</h2>
-              
-              {!result && !loading && (
-                <div className="text-center text-gray-500 py-20 border-2 border-dashed border-gray-400">
-                  <div className="text-6xl mb-4">⚕</div>
-                  <p className="font-semibold">Awaiting Assessment</p>
-                  <p className="text-sm mt-2">Submit patient information to begin</p>
+            <div className="border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] bg-white min-h-[600px]">
+              <div className="p-6 md:p-8">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-2 h-2 bg-black rounded-full"></div>
+                  <h2 className="text-2xl md:text-3xl font-black text-black uppercase tracking-tighter">
+                    Triage Results
+                  </h2>
                 </div>
-              )}
-
-              {loading && (
-                <div className="text-center py-20">
-                  <div className="inline-block animate-pulse">
-                    <div className="w-16 h-16 border-4 border-black border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                
+                {!result && !loading && (
+                  <div className="text-center py-20 md:py-24 border-4 border-dashed border-gray-400 bg-gray-50">
+                    <div className="text-7xl md:text-8xl mb-6">⚕</div>
+                    <p className="font-black text-lg md:text-xl text-black mb-2">AWAITING ASSESSMENT</p>
+                    <p className="text-sm md:text-base text-gray-600">Submit patient information to begin</p>
                   </div>
-                  <p className="text-black font-bold text-lg mt-4">ANALYZING...</p>
-                  <p className="text-gray-600 text-sm mt-2">Processing multimodal input</p>
-                </div>
-              )}
+                )}
 
-              {result && (
-                <div className="space-y-5">
-                  {/* Severity Score - Large Display */}
-                  <div className="border-4 border-black p-6 text-center">
-                    <div className="text-xs font-bold text-black uppercase tracking-widest mb-2">Severity Score</div>
-                    <div className={`inline-block px-8 py-4 ${getSeverityColor(result.severity_score)} ${getSeverityTextColor(result.severity_score)} text-5xl font-bold border-4 border-black`}>
-                      {Math.round(result.severity_score)}
+                {loading && (
+                  <div className="text-center py-20 md:py-24">
+                    <div className="inline-block">
+                      <div className="w-20 h-20 border-4 border-black border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
                     </div>
-                    <div className="text-xs mt-2 text-gray-700">/ 100</div>
-                    <div className="mt-3 text-lg font-bold text-black uppercase">{result.severity_level}</div>
+                    <p className="text-black font-black text-xl md:text-2xl mt-6">ANALYZING...</p>
+                    <p className="text-gray-600 text-sm md:text-base mt-3">Processing multimodal input</p>
                   </div>
+                )}
 
-                  {/* Urgency Badge */}
-                  <div className="border-2 border-black p-4 bg-black text-white">
-                    <div className="text-xs font-bold uppercase tracking-widest mb-1">Urgency Level</div>
-                    <div className="text-2xl font-bold uppercase">{result.urgency}</div>
-                  </div>
+                {result && (
+                  <div className="space-y-6">
+                    {/* Severity Score - Large Display */}
+                    <div className="border-4 border-black p-6 md:p-8 text-center bg-gradient-to-br from-white to-gray-50">
+                      <div className="text-xs font-black text-black uppercase tracking-widest mb-3">Severity Score</div>
+                      <div className={`inline-block px-10 md:px-12 py-6 md:py-8 ${getSeverityColor(result.severity_score)} ${getSeverityTextColor(result.severity_score)} text-6xl md:text-7xl font-black border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]`}>
+                        {Math.round(result.severity_score)}
+                      </div>
+                      <div className="text-xs md:text-sm mt-3 text-gray-700 font-bold">/ 100</div>
+                      <div className="mt-4 text-xl md:text-2xl font-black text-black uppercase tracking-wider">
+                        {result.severity_level}
+                      </div>
+                    </div>
 
-                  {/* Recommended Service */}
-                  <div className="border-2 border-black p-4 bg-white">
-                    <div className="text-xs font-bold text-black uppercase tracking-widest mb-2">Recommended Service</div>
-                    <div className="text-xl font-bold text-black uppercase">{result.recommended_service}</div>
-                  </div>
+                    {/* Urgency Badge */}
+                    <div className={`border-4 border-black p-5 md:p-6 ${getUrgencyBadgeColor(result.urgency)} shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]`}>
+                      <div className="text-xs font-black uppercase tracking-widest mb-2 opacity-90">Urgency Level</div>
+                      <div className="text-3xl md:text-4xl font-black uppercase tracking-tight">
+                        {result.urgency}
+                      </div>
+                    </div>
 
-                  {/* Assessment */}
-                  <div className="border-2 border-black p-4 bg-gray-50">
-                    <div className="text-xs font-bold text-black uppercase tracking-widest mb-2">Triage Assessment</div>
-                    <p className="text-black leading-relaxed">{result.triage_assessment}</p>
-                  </div>
+                    {/* Recommended Service */}
+                    <div className="border-4 border-black p-5 md:p-6 bg-white">
+                      <div className="text-xs font-black text-black uppercase tracking-widest mb-3">Recommended Service</div>
+                      <div className="text-2xl md:text-3xl font-black text-black uppercase tracking-tight leading-tight">
+                        {result.recommended_service}
+                      </div>
+                    </div>
 
-                  {/* Reasoning */}
-                  <div className="border-2 border-black p-4 bg-white">
-                    <div className="text-xs font-bold text-black uppercase tracking-widest mb-2">Clinical Reasoning</div>
-                    <p className="text-gray-700 text-sm leading-relaxed">{result.reasoning}</p>
-                  </div>
+                    {/* Assessment */}
+                    <div className="border-4 border-black p-5 md:p-6 bg-gray-50">
+                      <div className="text-xs font-black text-black uppercase tracking-widest mb-3">Triage Assessment</div>
+                      <p className="text-black leading-relaxed text-sm md:text-base whitespace-pre-wrap">
+                        {result.triage_assessment}
+                      </p>
+                    </div>
 
-                  {/* Model Used */}
-                  <div className="text-xs text-gray-500 text-right uppercase tracking-widest">
-                    Model: {result.model_used}
+                    {/* Clinical Reasoning - Enhanced Display */}
+                    <div className="border-4 border-black p-5 md:p-6 bg-white">
+                      <div className="flex items-center gap-2 mb-4">
+                        <div className="w-1 h-6 bg-black"></div>
+                        <div className="text-xs font-black text-black uppercase tracking-widest">Clinical Reasoning</div>
+                      </div>
+                      <div className="prose prose-sm max-w-none">
+                        <p className="text-gray-800 leading-relaxed text-sm md:text-base whitespace-pre-wrap font-medium">
+                          {result.reasoning}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Model Used */}
+                    <div className="text-xs text-gray-500 text-right uppercase tracking-widest font-bold">
+                      Model: {result.model_used}
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
+              </div>
             </div>
           </div>
         </div>
       </div>
 
       {/* Footer */}
-      <footer className="mt-12 border-t-2 border-black pt-6 pb-4">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="flex flex-col gap-6 text-sm">
+      <footer className="mt-16 border-t-4 border-black bg-white">
+        <div className="max-w-7xl mx-auto px-4 md:px-8 py-8 md:py-10">
+          <div className="flex flex-col gap-8 text-sm">
             {/* Links */}
-            <div className="flex flex-col md:flex-row gap-4 items-center justify-center">
+            <div className="flex flex-col md:flex-row gap-4 md:gap-6 items-center justify-center">
               <a
                 href="https://github.com/GenerativSchool-Lab/aura"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-black hover:underline font-semibold"
+                className="text-black hover:underline font-black uppercase tracking-wider transition-all hover:scale-105"
               >
                 GitHub Repository
               </a>
-              <span className="hidden md:inline text-gray-500">|</span>
+              <span className="hidden md:inline text-gray-400 text-xl">•</span>
               <a
                 href="https://generativschool.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-black hover:underline font-semibold"
+                className="text-black hover:underline font-black uppercase tracking-wider transition-all hover:scale-105"
               >
                 GenerativSchool - AI Civic Tech Lab
               </a>
             </div>
             
             {/* Credits */}
-            <div className="flex flex-col md:flex-row justify-between items-center gap-4 border-t border-gray-300 pt-4">
+            <div className="flex flex-col md:flex-row justify-between items-center gap-6 border-t-2 border-gray-300 pt-6">
               <div className="text-center md:text-left">
-                <p className="text-black font-bold">Lead Architect & Dev: Soufiane Lemqari</p>
+                <p className="text-black font-black text-base uppercase tracking-wider">Lead Architect & Dev</p>
+                <p className="text-black font-bold text-lg mt-1">Soufiane Lemqari</p>
               </div>
               <div className="text-center md:text-right text-gray-700">
-                <p className="text-xs font-semibold mb-1">Open Source Contributors:</p>
-                <p className="text-xs">Laura Sibony (AI Expert)</p>
-                <p className="text-xs">Camille François, M.D.</p>
+                <p className="text-xs font-black uppercase tracking-widest mb-2">Open Source Contributors</p>
+                <p className="text-sm font-semibold">Laura Sibony (AI Expert)</p>
+                <p className="text-sm font-semibold">Camille François, M.D.</p>
               </div>
             </div>
           </div>
