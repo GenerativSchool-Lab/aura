@@ -456,6 +456,38 @@ export default function Home() {
           </div>
         </div>
       </div>
+
+      {/* Footer */}
+      <footer className="mt-12 border-t-2 border-black pt-6 pb-4">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-sm">
+            <div className="flex flex-col md:flex-row gap-4 items-center">
+              <a
+                href="https://github.com/GenerativSchool-Lab/aura"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-black hover:underline font-semibold"
+              >
+                GitHub Repository
+              </a>
+              <span className="hidden md:inline text-gray-500">|</span>
+              <a
+                href="https://generativschool.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-black hover:underline font-semibold"
+              >
+                GenerativSchool - AI Civic Tech Lab
+              </a>
+            </div>
+            <div className="text-gray-700 text-center md:text-right">
+              <p className="font-semibold">Coded & Architected by</p>
+              <p className="text-black font-bold">Soufiane Lemqari</p>
+              <p className="text-xs text-gray-600 mt-1">Full Stack ML Engineer</p>
+            </div>
+          </div>
+        </div>
+      </footer>
     </main>
   )
 }
