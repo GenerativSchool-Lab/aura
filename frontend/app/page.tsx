@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 
 interface TriageResult {
   severity_score: number
@@ -10,6 +10,15 @@ interface TriageResult {
   urgency: string
   reasoning: string
   model_used: string
+}
+
+// Get API URL - use environment variable or fallback
+const getApiUrl = () => {
+  if (typeof window !== 'undefined') {
+    // Client-side: use the environment variable
+    return process.env.NEXT_PUBLIC_API_URL || 'https://aura-production-e01b.up.railway.app'
+  }
+  return 'https://aura-production-e01b.up.railway.app'
 }
 
 export default function Home() {
@@ -29,6 +38,28 @@ export default function Home() {
   const [error, setError] = useState('')
   const [isDragging, setIsDragging] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const dropZoneRef = useRef<HTMLDivElement>(null)
+
+  // Prevent default drag behaviors on the entire page
+  useEffect(() => {
+    const handleDragOver = (e: DragEvent) => {
+      e.preventDefault()
+      e.stopPropagation()
+    }
+
+    const handleDrop = (e: DragEvent) => {
+      e.preventDefault()
+      e.stopPropagation()
+    }
+
+    document.addEventListener('dragover', handleDragOver)
+    document.addEventListener('drop', handleDrop)
+
+    return () => {
+      document.removeEventListener('dragover', handleDragOver)
+      document.removeEventListener('drop', handleDrop)
+    }
+  }, [])
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0]
@@ -39,6 +70,7 @@ export default function Home() {
 
   const processFile = (selectedFile: File) => {
     setFile(selectedFile)
+    setError('')
     // Create preview for images
     if (selectedFile.type.startsWith('image/')) {
       const reader = new FileReader()
@@ -60,7 +92,10 @@ export default function Home() {
   const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault()
     e.stopPropagation()
-    setIsDragging(false)
+    // Only set dragging to false if we're leaving the drop zone
+    if (!dropZoneRef.current?.contains(e.relatedTarget as Node)) {
+      setIsDragging(false)
+    }
   }
 
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
@@ -118,7 +153,8 @@ export default function Home() {
     }
     
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+      const apiUrl = getApiUrl()
+      console.log('API URL:', apiUrl) // Debug log
       
       const formDataToSend = new FormData()
       
@@ -168,6 +204,7 @@ export default function Home() {
       setResult(data)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to perform triage assessment')
+      console.error('Triage error:', err) // Debug log
     } finally {
       setLoading(false)
     }
@@ -209,6 +246,7 @@ export default function Home() {
                     Upload Media <span className="text-gray-600 font-normal">(Image, Video, or Audio)</span>
                   </label>
                   <div
+                    ref={dropZoneRef}
                     onDragOver={handleDragOver}
                     onDragLeave={handleDragLeave}
                     onDrop={handleDrop}
@@ -248,7 +286,7 @@ export default function Home() {
                     )}
                   </div>
                   {filePreview && (
-                    <div className="mt-3 border-2 border-black p-2">
+                    <div className="mt-3 border-2 border-black p-2 bg-white">
                       <img src={filePreview} alt="Preview" className="max-w-full h-auto max-h-48 mx-auto" />
                     </div>
                   )}
