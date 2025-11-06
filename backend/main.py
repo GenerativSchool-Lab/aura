@@ -68,7 +68,7 @@ async def process_multimodal_triage(
     """Process triage with multimodal input"""
     if not mistral_client:
         return TriageResponse(
-            severity_score=5,
+            severity_score=50.0,
             severity_level="Moderate",
             triage_assessment="AI model not configured. Please set MISTRAL_API_KEY environment variable.",
             recommended_service="Emergency Department - General",
@@ -314,7 +314,7 @@ Respond ONLY with valid JSON, no additional text."""
             )
         except json.JSONDecodeError:
             return TriageResponse(
-                severity_score=5,
+                severity_score=50.0,
                 severity_level="Moderate",
                 triage_assessment="Unable to parse AI response. Please review manually.",
                 recommended_service="Emergency Department - General",
