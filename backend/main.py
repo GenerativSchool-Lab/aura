@@ -11,13 +11,14 @@ from clinical_scoring import get_clinical_scoring_guidelines, get_severity_level
 
 app = FastAPI(title="Hospital Emergency Multimodal Assistant API")
 
-# CORS middleware
+# CORS middleware - Allow all origins
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
+    allow_origins=["*"],  # Allow all origins
+    allow_credentials=False,  # Must be False when using allow_origins=["*"]
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["*"],
 )
 
 # Initialize Mistral client
@@ -48,9 +49,9 @@ class TriageResponse(BaseModel):
 
 def determine_model(input_type: str, file_content: bytes = None) -> str:
     """Determine which Mistral model to use based on input type"""
-    if input_type == "image" or (file_content and file_content.startswith(b'\x89PNG') or file_content.startswith(b'\xff\xd8')):
+    if input_type == "image":
         return "pixtral-large-latest"  # Pixtral for images
-    elif input_type in ["video", "audio"] or (file_content and file_content.startswith(b'RIFF')):
+    elif input_type in ["video", "audio"]:
         return "voxtral-large-latest"  # Voxtral for audio/video
     else:
         return "mistral-large-latest"  # Mistral for text
