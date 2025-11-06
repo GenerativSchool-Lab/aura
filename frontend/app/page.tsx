@@ -27,21 +27,58 @@ export default function Home() {
   const [result, setResult] = useState<TriageResult | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [isDragging, setIsDragging] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0]
     if (selectedFile) {
-      setFile(selectedFile)
-      // Create preview for images
-      if (selectedFile.type.startsWith('image/')) {
-        const reader = new FileReader()
-        reader.onloadend = () => {
-          setFilePreview(reader.result as string)
-        }
-        reader.readAsDataURL(selectedFile)
+      processFile(selectedFile)
+    }
+  }
+
+  const processFile = (selectedFile: File) => {
+    setFile(selectedFile)
+    // Create preview for images
+    if (selectedFile.type.startsWith('image/')) {
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        setFilePreview(reader.result as string)
+      }
+      reader.readAsDataURL(selectedFile)
+    } else {
+      setFilePreview(null)
+    }
+  }
+
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsDragging(true)
+  }
+
+  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsDragging(false)
+  }
+
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsDragging(false)
+
+    const droppedFile = e.dataTransfer.files?.[0]
+    if (droppedFile) {
+      // Validate file type
+      const isValidType = droppedFile.type.startsWith('image/') || 
+                         droppedFile.type.startsWith('video/') || 
+                         droppedFile.type.startsWith('audio/')
+      
+      if (isValidType) {
+        processFile(droppedFile)
       } else {
-        setFilePreview(null)
+        setError('Invalid file type. Please upload an image, video, or audio file.')
       }
     }
   }
@@ -171,7 +208,16 @@ export default function Home() {
                   <label className="block text-sm font-bold text-black mb-2 uppercase">
                     Upload Media <span className="text-gray-600 font-normal">(Image, Video, or Audio)</span>
                   </label>
-                  <div className="border-2 border-dashed border-black p-4 text-center">
+                  <div
+                    onDragOver={handleDragOver}
+                    onDragLeave={handleDragLeave}
+                    onDrop={handleDrop}
+                    className={`border-2 border-dashed p-4 text-center transition-colors ${
+                      isDragging 
+                        ? 'border-black bg-black text-white' 
+                        : 'border-black bg-white'
+                    }`}
+                  >
                     <input
                       ref={fileInputRef}
                       type="file"
@@ -184,10 +230,10 @@ export default function Home() {
                       htmlFor="file-upload"
                       className="cursor-pointer block"
                     >
-                      <div className="text-black font-semibold mb-2">
-                        {file ? file.name : 'Click to upload or drag and drop'}
+                      <div className={`font-semibold mb-2 ${isDragging ? 'text-white' : 'text-black'}`}>
+                        {file ? file.name : (isDragging ? 'Drop file here' : 'Click to upload or drag and drop')}
                       </div>
-                      <div className="text-xs text-gray-600">
+                      <div className={`text-xs ${isDragging ? 'text-gray-300' : 'text-gray-600'}`}>
                         Supports: Images, Videos, Audio files
                       </div>
                     </label>
