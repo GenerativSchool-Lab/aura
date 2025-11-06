@@ -184,12 +184,12 @@ CATÉGORISATION PAR SCORE (0-100):
 - Score 30-49 → Low / Low (Non urgent)
 - Score 0-29 → Non-urgent / Non-urgent (Non urgent)
 
-INSTRUCTIONS:
-1. Identifier TOUS les signes cliniques présents dans la description
-2. Assigner le score 0-100 pour chaque signe selon les tables ci-dessus
-3. Prendre le SCORE MAXIMUM (pas la moyenne) pour déterminer la gravité
-4. Convertir vers score 1-10 selon le mapping
-5. Justifier chaque signe identifié dans le reasoning
+INSTRUCTIONS (CONCIS):
+1. Identifier TOUS les signes cliniques présents
+2. Assigner score 0-100 pour chaque signe selon tables
+3. Prendre SCORE MAXIMUM (pas moyenne) pour gravité
+4. Déterminer severity_level et urgency selon mapping score
+5. Justifier brièvement chaque signe dans reasoning (format structuré)
 """
     return guidelines
 
