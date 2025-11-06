@@ -13,6 +13,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy application code
 COPY backend/main.py .
+COPY backend/clinical_scoring.py .
 
 # Expose port (Railway will set PORT env var at runtime)
 EXPOSE 8000
