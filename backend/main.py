@@ -7,6 +7,7 @@ from typing import Optional, List
 from mistralai import Mistral
 import json
 import mimetypes
+from clinical_scoring import get_clinical_scoring_guidelines, convert_score_100_to_10
 
 app = FastAPI(title="Hospital Emergency Multimodal Assistant API")
 
@@ -115,34 +116,37 @@ async def process_multimodal_triage(
             "content": [
                 {
                     "type": "text",
-                    "text": f"""You are an expert emergency department triage nurse. Analyze this medical image and the following patient information to provide a comprehensive triage assessment.
+                    "text": f"""You are an expert emergency department triage nurse. Analyze this medical image and the following patient information to provide a comprehensive triage assessment using evidence-based clinical scoring systems.
 
 {patient_context}
 {('Chief Complaint: ' + text_input) if text_input else ''}
 {('Symptoms: ' + text_input) if text_input and not patient_context else ''}
 
-CRITICAL: The severity_score and severity_level MUST be consistent. Use this exact mapping:
-- Score 1-2: severity_level MUST be "Critical", urgency MUST be "Immediate"
-- Score 3-4: severity_level MUST be "High", urgency MUST be "Urgent"
-- Score 5-6: severity_level MUST be "Moderate", urgency MUST be "Moderate"
-- Score 7-8: severity_level MUST be "Low", urgency MUST be "Low"
-- Score 9-10: severity_level MUST be "Non-urgent", urgency MUST be "Non-urgent"
+{get_clinical_scoring_guidelines(patient_age)}
 
-Severity scoring guidelines:
-- 1-2 (Critical): Life-threatening, requires immediate intervention (e.g., cardiac arrest, severe trauma, stroke, respiratory failure)
-- 3-4 (High): Serious condition requiring urgent care (e.g., severe pain, significant bleeding, acute MI, severe infection)
-- 5-6 (Moderate): Needs medical attention but not immediately life-threatening (e.g., moderate pain, stable fractures, controlled bleeding)
-- 7-8 (Low): Minor condition, can wait (e.g., minor cuts, mild symptoms, routine follow-up)
-- 9-10 (Non-urgent): Very minor or no acute issue (e.g., small lesions, minor complaints, preventive care)
+CRITICAL INSTRUCTIONS:
+1. Identify ALL clinical signs visible in the image AND described in the text
+2. Assign a score (0-100) for EACH sign according to the clinical scoring tables
+3. Use the MAXIMUM score (not average) to determine overall severity
+4. Convert the maximum score to severity_score (1-10) using the conversion mapping
+5. Ensure severity_score, severity_level, and urgency are consistent
+
+CONVERSION MAPPING (MANDATORY):
+- Clinical score 90-100 → severity_score 1-2 → severity_level "Critical" → urgency "Immediate"
+- Clinical score 70-89 → severity_score 3-4 → severity_level "High" → urgency "Urgent"
+- Clinical score 50-69 → severity_score 5-6 → severity_level "Moderate" → urgency "Moderate"
+- Clinical score 30-49 → severity_score 7-8 → severity_level "Low" → urgency "Low"
+- Clinical score 0-29 → severity_score 9-10 → severity_level "Non-urgent" → urgency "Non-urgent"
 
 Provide your assessment in the following JSON format:
 {{
-    "severity_score": <integer 1-10, MUST match severity_level according to mapping above>,
-    "severity_level": "<MUST match score: Critical(1-2)/High(3-4)/Moderate(5-6)/Low(7-8)/Non-urgent(9-10)>",
-    "triage_assessment": "<Detailed assessment of the patient's condition based on the image>",
+    "clinical_score_100": <float 0-100, the maximum score from identified clinical signs>,
+    "severity_score": <integer 1-10, converted from clinical_score_100 using mapping above>,
+    "severity_level": "<MUST match severity_score: Critical(1-2)/High(3-4)/Moderate(5-6)/Low(7-8)/Non-urgent(9-10)>",
+    "triage_assessment": "<Detailed assessment identifying all clinical signs found in image and text, with their scores>",
     "recommended_service": "<Specific department or service>",
-    "urgency": "<MUST match score: Immediate(1-2)/Urgent(3-4)/Moderate(5-6)/Low(7-8)/Non-urgent(9-10)>",
-    "reasoning": "<Explanation of the severity score and routing decision, including why this score matches the level>"
+    "urgency": "<MUST match severity_score: Immediate(1-2)/Urgent(3-4)/Moderate(5-6)/Low(7-8)/Non-urgent(9-10)>",
+    "reasoning": "<Detailed explanation: (1) Clinical signs identified in image, (2) Clinical signs from text, (3) Score assigned to each sign (0-100), (4) Maximum score selected, (5) Conversion to severity_score 1-10, (6) Clinical justification for routing>"
 }}
 
 Respond ONLY with valid JSON, no additional text."""
@@ -159,33 +163,36 @@ Respond ONLY with valid JSON, no additional text."""
         # Voxtral for audio/video
         messages.append({
             "role": "user",
-            "content": f"""You are an expert emergency department triage nurse. Analyze this {input_type} recording and the following patient information to provide a comprehensive triage assessment.
+            "content": f"""You are an expert emergency department triage nurse. Analyze this {input_type} recording and the following patient information to provide a comprehensive triage assessment using evidence-based clinical scoring systems.
 
 {patient_context}
 {('Additional notes: ' + text_input) if text_input else ''}
 
-CRITICAL: The severity_score and severity_level MUST be consistent. Use this exact mapping:
-- Score 1-2: severity_level MUST be "Critical", urgency MUST be "Immediate"
-- Score 3-4: severity_level MUST be "High", urgency MUST be "Urgent"
-- Score 5-6: severity_level MUST be "Moderate", urgency MUST be "Moderate"
-- Score 7-8: severity_level MUST be "Low", urgency MUST be "Low"
-- Score 9-10: severity_level MUST be "Non-urgent", urgency MUST be "Non-urgent"
+{get_clinical_scoring_guidelines(patient_age)}
 
-Severity scoring guidelines:
-- 1-2 (Critical): Life-threatening, requires immediate intervention (e.g., cardiac arrest, severe trauma, stroke, respiratory failure)
-- 3-4 (High): Serious condition requiring urgent care (e.g., severe pain, significant bleeding, acute MI, severe infection)
-- 5-6 (Moderate): Needs medical attention but not immediately life-threatening (e.g., moderate pain, stable fractures, controlled bleeding)
-- 7-8 (Low): Minor condition, can wait (e.g., minor cuts, mild symptoms, routine follow-up)
-- 9-10 (Non-urgent): Very minor or no acute issue (e.g., small lesions, minor complaints, preventive care)
+CRITICAL INSTRUCTIONS:
+1. Transcribe and identify ALL clinical signs from the {input_type} recording
+2. Assign a score (0-100) for EACH sign according to the clinical scoring tables
+3. Use the MAXIMUM score (not average) to determine overall severity
+4. Convert the maximum score to severity_score (1-10) using the conversion mapping
+5. Ensure severity_score, severity_level, and urgency are consistent
+
+CONVERSION MAPPING (MANDATORY):
+- Clinical score 90-100 → severity_score 1-2 → severity_level "Critical" → urgency "Immediate"
+- Clinical score 70-89 → severity_score 3-4 → severity_level "High" → urgency "Urgent"
+- Clinical score 50-69 → severity_score 5-6 → severity_level "Moderate" → urgency "Moderate"
+- Clinical score 30-49 → severity_score 7-8 → severity_level "Low" → urgency "Low"
+- Clinical score 0-29 → severity_score 9-10 → severity_level "Non-urgent" → urgency "Non-urgent"
 
 Provide your assessment in the following JSON format:
 {{
-    "severity_score": <integer 1-10, MUST match severity_level according to mapping above>,
-    "severity_level": "<MUST match score: Critical(1-2)/High(3-4)/Moderate(5-6)/Low(7-8)/Non-urgent(9-10)>",
-    "triage_assessment": "<Detailed assessment of the patient's condition based on the {input_type}>",
+    "clinical_score_100": <float 0-100, the maximum score from identified clinical signs>,
+    "severity_score": <integer 1-10, converted from clinical_score_100 using mapping above>,
+    "severity_level": "<MUST match severity_score: Critical(1-2)/High(3-4)/Moderate(5-6)/Low(7-8)/Non-urgent(9-10)>",
+    "triage_assessment": "<Detailed assessment identifying all clinical signs found in {input_type} and text, with their scores>",
     "recommended_service": "<Specific department or service>",
-    "urgency": "<MUST match score: Immediate(1-2)/Urgent(3-4)/Moderate(5-6)/Low(7-8)/Non-urgent(9-10)>",
-    "reasoning": "<Explanation of the severity score and routing decision, including why this score matches the level>"
+    "urgency": "<MUST match severity_score: Immediate(1-2)/Urgent(3-4)/Moderate(5-6)/Low(7-8)/Non-urgent(9-10)>",
+    "reasoning": "<Detailed explanation: (1) Clinical signs identified in {input_type}, (2) Clinical signs from text, (3) Score assigned to each sign (0-100), (4) Maximum score selected, (5) Conversion to severity_score 1-10, (6) Clinical justification for routing>"
 }}
 
 Respond ONLY with valid JSON, no additional text."""
@@ -194,34 +201,40 @@ Respond ONLY with valid JSON, no additional text."""
         # Actual implementation may require transcription first
     else:
         # Mistral for text
-        prompt = f"""You are an expert emergency department triage nurse. Analyze the following patient information and provide a comprehensive triage assessment.
+        # Get clinical scoring guidelines based on patient age
+        clinical_guidelines = get_clinical_scoring_guidelines(patient_age)
+        
+        prompt = f"""You are an expert emergency department triage nurse. Analyze the following patient information and provide a comprehensive triage assessment using evidence-based clinical scoring systems.
 
 {patient_context}
 {('Chief Complaint: ' + text_input) if text_input else 'No chief complaint provided'}
 {('Symptoms: ' + text_input) if text_input else 'No symptoms provided'}
 
-CRITICAL: The severity_score and severity_level MUST be consistent. Use this exact mapping:
-- Score 1-2: severity_level MUST be "Critical", urgency MUST be "Immediate"
-- Score 3-4: severity_level MUST be "High", urgency MUST be "Urgent"
-- Score 5-6: severity_level MUST be "Moderate", urgency MUST be "Moderate"
-- Score 7-8: severity_level MUST be "Low", urgency MUST be "Low"
-- Score 9-10: severity_level MUST be "Non-urgent", urgency MUST be "Non-urgent"
+{clinical_guidelines}
 
-Severity scoring guidelines:
-- 1-2 (Critical): Life-threatening, requires immediate intervention (e.g., cardiac arrest, severe trauma, stroke, respiratory failure)
-- 3-4 (High): Serious condition requiring urgent care (e.g., severe pain, significant bleeding, acute MI, severe infection)
-- 5-6 (Moderate): Needs medical attention but not immediately life-threatening (e.g., moderate pain, stable fractures, controlled bleeding)
-- 7-8 (Low): Minor condition, can wait (e.g., minor cuts, mild symptoms, routine follow-up)
-- 9-10 (Non-urgent): Very minor or no acute issue (e.g., small lesions, minor complaints, preventive care)
+CRITICAL INSTRUCTIONS:
+1. Identify ALL clinical signs present in the patient description
+2. Assign a score (0-100) for EACH sign according to the clinical scoring tables above
+3. Use the MAXIMUM score (not average) to determine overall severity
+4. Convert the maximum score to severity_score (1-10) using the conversion mapping
+5. Ensure severity_score, severity_level, and urgency are consistent
+
+CONVERSION MAPPING (MANDATORY):
+- Clinical score 90-100 → severity_score 1-2 → severity_level "Critical" → urgency "Immediate"
+- Clinical score 70-89 → severity_score 3-4 → severity_level "High" → urgency "Urgent"
+- Clinical score 50-69 → severity_score 5-6 → severity_level "Moderate" → urgency "Moderate"
+- Clinical score 30-49 → severity_score 7-8 → severity_level "Low" → urgency "Low"
+- Clinical score 0-29 → severity_score 9-10 → severity_level "Non-urgent" → urgency "Non-urgent"
 
 Provide your assessment in the following JSON format:
 {{
-    "severity_score": <integer 1-10, MUST match severity_level according to mapping above>,
-    "severity_level": "<MUST match score: Critical(1-2)/High(3-4)/Moderate(5-6)/Low(7-8)/Non-urgent(9-10)>",
-    "triage_assessment": "<Detailed assessment of the patient's condition>",
+    "clinical_score_100": <float 0-100, the maximum score from identified clinical signs>,
+    "severity_score": <integer 1-10, converted from clinical_score_100 using mapping above>,
+    "severity_level": "<MUST match severity_score: Critical(1-2)/High(3-4)/Moderate(5-6)/Low(7-8)/Non-urgent(9-10)>",
+    "triage_assessment": "<Detailed assessment identifying all clinical signs found and their scores>",
     "recommended_service": "<Specific department or service: e.g., 'Cardiology', 'Trauma Center', 'Pediatric Emergency', 'General Emergency', 'Psychiatric Emergency', 'Orthopedics', etc.>",
-    "urgency": "<MUST match score: Immediate(1-2)/Urgent(3-4)/Moderate(5-6)/Low(7-8)/Non-urgent(9-10)>",
-    "reasoning": "<Explanation of the severity score and routing decision, including why this score matches the level>"
+    "urgency": "<MUST match severity_score: Immediate(1-2)/Urgent(3-4)/Moderate(5-6)/Low(7-8)/Non-urgent(9-10)>",
+    "reasoning": "<Detailed explanation: (1) List all clinical signs identified, (2) Score assigned to each sign (0-100), (3) Maximum score selected, (4) Conversion to severity_score 1-10, (5) Clinical justification for routing decision>"
 }}
 
 Respond ONLY with valid JSON, no additional text."""
@@ -270,12 +283,22 @@ Respond ONLY with valid JSON, no additional text."""
             
             triage_data = json.loads(response_text)
             
-            # Validate and enforce consistency between score and level
+            # Get clinical score if provided, otherwise use severity_score
+            clinical_score_100 = triage_data.get("clinical_score_100")
             score = triage_data.get("severity_score", 5)
+            
+            # If clinical_score_100 is provided, validate and convert
+            if clinical_score_100 is not None:
+                # Ensure clinical score is in valid range
+                clinical_score_100 = max(0, min(100, float(clinical_score_100)))
+                # Convert to 1-10 scale
+                score = convert_score_100_to_10(clinical_score_100)
+            
+            # Validate and enforce consistency between score and level
             level = triage_data.get("severity_level", "Moderate")
             urgency = triage_data.get("urgency", "Moderate")
             
-            # Enforce correct mapping
+            # Enforce correct mapping based on score
             if score <= 2:
                 level = "Critical"
                 urgency = "Immediate"
