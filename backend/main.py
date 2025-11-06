@@ -121,14 +121,28 @@ async def process_multimodal_triage(
 {('Chief Complaint: ' + text_input) if text_input else ''}
 {('Symptoms: ' + text_input) if text_input and not patient_context else ''}
 
+CRITICAL: The severity_score and severity_level MUST be consistent. Use this exact mapping:
+- Score 1-2: severity_level MUST be "Critical", urgency MUST be "Immediate"
+- Score 3-4: severity_level MUST be "High", urgency MUST be "Urgent"
+- Score 5-6: severity_level MUST be "Moderate", urgency MUST be "Moderate"
+- Score 7-8: severity_level MUST be "Low", urgency MUST be "Low"
+- Score 9-10: severity_level MUST be "Non-urgent", urgency MUST be "Non-urgent"
+
+Severity scoring guidelines:
+- 1-2 (Critical): Life-threatening, requires immediate intervention (e.g., cardiac arrest, severe trauma, stroke, respiratory failure)
+- 3-4 (High): Serious condition requiring urgent care (e.g., severe pain, significant bleeding, acute MI, severe infection)
+- 5-6 (Moderate): Needs medical attention but not immediately life-threatening (e.g., moderate pain, stable fractures, controlled bleeding)
+- 7-8 (Low): Minor condition, can wait (e.g., minor cuts, mild symptoms, routine follow-up)
+- 9-10 (Non-urgent): Very minor or no acute issue (e.g., small lesions, minor complaints, preventive care)
+
 Provide your assessment in the following JSON format:
 {{
-    "severity_score": <integer 1-10, where 1=critical/immediate, 5=moderate, 10=non-urgent>,
-    "severity_level": "<Critical/High/Moderate/Low/Non-urgent>",
+    "severity_score": <integer 1-10, MUST match severity_level according to mapping above>,
+    "severity_level": "<MUST match score: Critical(1-2)/High(3-4)/Moderate(5-6)/Low(7-8)/Non-urgent(9-10)>",
     "triage_assessment": "<Detailed assessment of the patient's condition based on the image>",
     "recommended_service": "<Specific department or service>",
-    "urgency": "<Immediate/Urgent/Moderate/Low/Non-urgent>",
-    "reasoning": "<Explanation of the severity score and routing decision>"
+    "urgency": "<MUST match score: Immediate(1-2)/Urgent(3-4)/Moderate(5-6)/Low(7-8)/Non-urgent(9-10)>",
+    "reasoning": "<Explanation of the severity score and routing decision, including why this score matches the level>"
 }}
 
 Respond ONLY with valid JSON, no additional text."""
@@ -150,14 +164,28 @@ Respond ONLY with valid JSON, no additional text."""
 {patient_context}
 {('Additional notes: ' + text_input) if text_input else ''}
 
+CRITICAL: The severity_score and severity_level MUST be consistent. Use this exact mapping:
+- Score 1-2: severity_level MUST be "Critical", urgency MUST be "Immediate"
+- Score 3-4: severity_level MUST be "High", urgency MUST be "Urgent"
+- Score 5-6: severity_level MUST be "Moderate", urgency MUST be "Moderate"
+- Score 7-8: severity_level MUST be "Low", urgency MUST be "Low"
+- Score 9-10: severity_level MUST be "Non-urgent", urgency MUST be "Non-urgent"
+
+Severity scoring guidelines:
+- 1-2 (Critical): Life-threatening, requires immediate intervention (e.g., cardiac arrest, severe trauma, stroke, respiratory failure)
+- 3-4 (High): Serious condition requiring urgent care (e.g., severe pain, significant bleeding, acute MI, severe infection)
+- 5-6 (Moderate): Needs medical attention but not immediately life-threatening (e.g., moderate pain, stable fractures, controlled bleeding)
+- 7-8 (Low): Minor condition, can wait (e.g., minor cuts, mild symptoms, routine follow-up)
+- 9-10 (Non-urgent): Very minor or no acute issue (e.g., small lesions, minor complaints, preventive care)
+
 Provide your assessment in the following JSON format:
 {{
-    "severity_score": <integer 1-10, where 1=critical/immediate, 5=moderate, 10=non-urgent>,
-    "severity_level": "<Critical/High/Moderate/Low/Non-urgent>",
+    "severity_score": <integer 1-10, MUST match severity_level according to mapping above>,
+    "severity_level": "<MUST match score: Critical(1-2)/High(3-4)/Moderate(5-6)/Low(7-8)/Non-urgent(9-10)>",
     "triage_assessment": "<Detailed assessment of the patient's condition based on the {input_type}>",
     "recommended_service": "<Specific department or service>",
-    "urgency": "<Immediate/Urgent/Moderate/Low/Non-urgent>",
-    "reasoning": "<Explanation of the severity score and routing decision>"
+    "urgency": "<MUST match score: Immediate(1-2)/Urgent(3-4)/Moderate(5-6)/Low(7-8)/Non-urgent(9-10)>",
+    "reasoning": "<Explanation of the severity score and routing decision, including why this score matches the level>"
 }}
 
 Respond ONLY with valid JSON, no additional text."""
@@ -172,14 +200,28 @@ Respond ONLY with valid JSON, no additional text."""
 {('Chief Complaint: ' + text_input) if text_input else 'No chief complaint provided'}
 {('Symptoms: ' + text_input) if text_input else 'No symptoms provided'}
 
+CRITICAL: The severity_score and severity_level MUST be consistent. Use this exact mapping:
+- Score 1-2: severity_level MUST be "Critical", urgency MUST be "Immediate"
+- Score 3-4: severity_level MUST be "High", urgency MUST be "Urgent"
+- Score 5-6: severity_level MUST be "Moderate", urgency MUST be "Moderate"
+- Score 7-8: severity_level MUST be "Low", urgency MUST be "Low"
+- Score 9-10: severity_level MUST be "Non-urgent", urgency MUST be "Non-urgent"
+
+Severity scoring guidelines:
+- 1-2 (Critical): Life-threatening, requires immediate intervention (e.g., cardiac arrest, severe trauma, stroke, respiratory failure)
+- 3-4 (High): Serious condition requiring urgent care (e.g., severe pain, significant bleeding, acute MI, severe infection)
+- 5-6 (Moderate): Needs medical attention but not immediately life-threatening (e.g., moderate pain, stable fractures, controlled bleeding)
+- 7-8 (Low): Minor condition, can wait (e.g., minor cuts, mild symptoms, routine follow-up)
+- 9-10 (Non-urgent): Very minor or no acute issue (e.g., small lesions, minor complaints, preventive care)
+
 Provide your assessment in the following JSON format:
 {{
-    "severity_score": <integer 1-10, where 1=critical/immediate, 5=moderate, 10=non-urgent>,
-    "severity_level": "<Critical/High/Moderate/Low/Non-urgent>",
+    "severity_score": <integer 1-10, MUST match severity_level according to mapping above>,
+    "severity_level": "<MUST match score: Critical(1-2)/High(3-4)/Moderate(5-6)/Low(7-8)/Non-urgent(9-10)>",
     "triage_assessment": "<Detailed assessment of the patient's condition>",
     "recommended_service": "<Specific department or service: e.g., 'Cardiology', 'Trauma Center', 'Pediatric Emergency', 'General Emergency', 'Psychiatric Emergency', 'Orthopedics', etc.>",
-    "urgency": "<Immediate/Urgent/Moderate/Low/Non-urgent>",
-    "reasoning": "<Explanation of the severity score and routing decision>"
+    "urgency": "<MUST match score: Immediate(1-2)/Urgent(3-4)/Moderate(5-6)/Low(7-8)/Non-urgent(9-10)>",
+    "reasoning": "<Explanation of the severity score and routing decision, including why this score matches the level>"
 }}
 
 Respond ONLY with valid JSON, no additional text."""
@@ -228,12 +270,34 @@ Respond ONLY with valid JSON, no additional text."""
             
             triage_data = json.loads(response_text)
             
+            # Validate and enforce consistency between score and level
+            score = triage_data.get("severity_score", 5)
+            level = triage_data.get("severity_level", "Moderate")
+            urgency = triage_data.get("urgency", "Moderate")
+            
+            # Enforce correct mapping
+            if score <= 2:
+                level = "Critical"
+                urgency = "Immediate"
+            elif score <= 4:
+                level = "High"
+                urgency = "Urgent"
+            elif score <= 6:
+                level = "Moderate"
+                urgency = "Moderate"
+            elif score <= 8:
+                level = "Low"
+                urgency = "Low"
+            else:  # score 9-10
+                level = "Non-urgent"
+                urgency = "Non-urgent"
+            
             return TriageResponse(
-                severity_score=triage_data.get("severity_score", 5),
-                severity_level=triage_data.get("severity_level", "Moderate"),
+                severity_score=score,
+                severity_level=level,
                 triage_assessment=triage_data.get("triage_assessment", "Assessment completed"),
                 recommended_service=triage_data.get("recommended_service", "Emergency Department - General"),
-                urgency=triage_data.get("urgency", "Moderate"),
+                urgency=urgency,
                 reasoning=triage_data.get("reasoning", "Assessment based on provided information"),
                 model_used=model
             )
